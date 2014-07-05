@@ -7,5 +7,8 @@ module.exports = function () {
 		res.statusCode = 404;
 		res.end();
 	};
+	app.listen = function (port, done) {
+		return http.createServer(this).listen(port, done);
+	};
 	return app;
 };
