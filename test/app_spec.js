@@ -52,7 +52,7 @@ describe('.use', function () {
 	});
 });
 
-describe("calling middleware stack",function() {
+describe("calling middleware stack",function () {
 	var app;
 
 	beforeEach(function () {
@@ -112,6 +112,82 @@ describe("calling middleware stack",function() {
 		request(app)
 			.get('/')
 			.expect(404)
+			.end(done);
+	});
+});
+
+describe('error handling', function () {
+	var app;
+
+	beforeEach(function () {
+		app = new express();
+	});
+
+	it('should return 500 for unhandled error', function (done) {
+		var m1 = function (req, res, next) {
+			next(new Error('boom!'));
+		};
+
+		app.use(m1);
+
+		request(app)
+			.get('/')
+			.expect(500)
+			.end(done);
+	});
+
+	it('should return 500 for uncaught error', function (done) {
+		var m1 = function (req, res, next) {
+			raise new Error('boom!');
+		};
+
+		app.use(m1);
+
+		request(app)
+			.get('/')
+			.expect(500)
+			.end(done);
+	});
+
+	it('should skip error handlers when next is called without an error', function (done) {
+		var m1 = function (req, res, next) {
+			next();
+		};
+
+		var e1 = function (err, req, res, next) {};
+
+		var m2 = function (req, res, next) {
+			res.end('m2');
+		};
+
+		app.use(m1);
+		app.use(e1);
+		app.use(m2);
+
+		request(app)
+			.get('/')
+			.expect('m2')
+			.end(done);
+	});
+
+	it('should skip normal middlewares if next is called with an error', function (done) {
+		var m1 = function (req, res, next) {
+			next(new Error("boom!"));
+		};
+
+		var m2 = function (req, res, next) {};
+
+		var e1 = function (err, req, res, next) {
+			res.end('e1');
+		}
+
+		app.use(m1);
+		app.use(m2);
+		app.use(e1);
+
+		request(app)
+			.get('/')
+			.expect('e1')
 			.end(done);
 	});
 });
