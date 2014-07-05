@@ -38,3 +38,16 @@ describe('app', function() {
 		});
 	});
 });
+
+describe('.use', function () {
+	var app = express();
+
+	var m1 = function () {};
+	var m2 = function () {};
+
+	it('should add middlewares to stack', function() {
+		app.use(m1);
+		app.use(m2);
+		expect(app.stack.length).to.equal(2);
+	});
+});

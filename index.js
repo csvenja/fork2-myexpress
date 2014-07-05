@@ -7,8 +7,16 @@ module.exports = function () {
 		res.statusCode = 404;
 		res.end();
 	};
+
+	app.stack = [];
+
 	app.listen = function (port, done) {
 		return http.createServer(this).listen(port, done);
 	};
+
+	app.use = function (middleware) {
+		this.stack.push(middleware);
+	};
+
 	return app;
 };
