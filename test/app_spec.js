@@ -22,17 +22,17 @@ describe('app', function() {
 		});
 	});
 
-	describe("#listen", function () {
+	describe('#listen', function () {
 		var app = express();
 		var port = 7000;
 
 		before(function(done) {
 			app.listen(port, done);
-		})
+		});
 
 		it('should listen on port 7000', function(done) {
-			request("http://localhost:7000")
-				.get("/foo")
+			request('http://localhost:7000')
+				.get('/foo')
 				.expect(404)
 				.end(done);
 		});
