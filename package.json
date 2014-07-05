@@ -1,0 +1,16 @@
+{
+  "name": "myexpress",
+  "version": "0.0.0",
+  "description": "The Express app.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Svenja Cao",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "mocha": "^1.20.1",
+    "supertest": "^0.13.0"
+  }
+}
