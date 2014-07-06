@@ -5,13 +5,35 @@ var http = require('http');
 module.exports = function () {
 	var app = function (req, res) {
 		var i = 0;
-		function next() {
+		function next(err) {
 			var middleware = app.stack[i];
-			if (middleware === undefined) {
-				return;
+			if (err) {
+				if (middleware === undefined) {
+					res.statusCode = 500;
+					res.end();
+				}
+				i++;
+				if (middleware.length < 4) {
+					next(err);
+				} else {
+					middleware.apply(app, [err, req, res, next]);
+				}
+			} else {
+				if (middleware === undefined) {
+					return;
+				}
+				i++;
+				if (middleware.length < 4) {
+					try {
+						middleware.apply(app, [req, res, next]);
+					} catch(error) {
+						res.statusCode = 500;
+						res.end();
+					}
+				} else {
+					next();
+				}
 			}
-			i++;
-			middleware.apply(app, [req, res, next]);
 		}
 		next();
 		res.statusCode = 404;

@@ -138,7 +138,7 @@ describe('error handling', function () {
 
 	it('should return 500 for uncaught error', function (done) {
 		var m1 = function (req, res, next) {
-			raise new Error('boom!');
+			throw new Error('boom!');
 		};
 
 		app.use(m1);
