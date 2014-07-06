@@ -41,13 +41,18 @@ module.exports = function () {
 	};
 
 	app.stack = [];
+	app.__isMyexpressApp__ = true;
 
 	app.listen = function (port, done) {
 		return http.createServer(this).listen(port, done);
 	};
 
 	app.use = function (middleware) {
-		this.stack.push(middleware);
+		if (middleware.__isMyexpressApp__) {
+			this.stack.push.apply(this.stack, middleware.stack);
+		} else {
+			this.stack.push(middleware);
+		}
 	};
 
 	return app;

@@ -52,7 +52,7 @@ describe('.use', function () {
 	});
 });
 
-describe("calling middleware stack",function () {
+describe('calling middleware stack',function () {
 	var app;
 
 	beforeEach(function () {
@@ -60,7 +60,7 @@ describe("calling middleware stack",function () {
 	});
 
 	it('should be able to call a single middleware', function (done) {
-		var m1 = function (req, res, next) {
+		var m1 = function (req, res) {
 			res.end('hello from m1');
 		};
 		app.use(m1);
@@ -75,8 +75,8 @@ describe("calling middleware stack",function () {
 			next();
 		};
 
-		var m2 = function (req, res, next) {
-			res.end("hello from m2");
+		var m2 = function (req, res) {
+			res.end('hello from m2');
 		};
 
 		app.use(m1);
@@ -137,7 +137,7 @@ describe('error handling', function () {
 	});
 
 	it('should return 500 for uncaught error', function (done) {
-		var m1 = function (req, res, next) {
+		var m1 = function () {
 			throw new Error('boom!');
 		};
 
@@ -156,7 +156,7 @@ describe('error handling', function () {
 
 		var e1 = function (err, req, res, next) {};
 
-		var m2 = function (req, res, next) {
+		var m2 = function (req, res) {
 			res.end('m2');
 		};
 
@@ -172,14 +172,14 @@ describe('error handling', function () {
 
 	it('should skip normal middlewares if next is called with an error', function (done) {
 		var m1 = function (req, res, next) {
-			next(new Error("boom!"));
+			next(new Error('boom!'));
 		};
 
-		var m2 = function (req, res, next) {};
+		var m2 = function () {};
 
 		var e1 = function (err, req, res, next) {
 			res.end('e1');
-		}
+		};
 
 		app.use(m1);
 		app.use(m2);
@@ -188,6 +188,72 @@ describe('error handling', function () {
 		request(app)
 			.get('/')
 			.expect('e1')
+			.end(done);
+	});
+});
+
+describe('app embedding as middleware', function () {
+	var app;
+	var subApp;
+
+	beforeEach(function () {
+		app = new express();
+		subApp = new express();
+	});
+
+	it('should pass unhandled request to parent', function (done) {
+		function m2(req, res) {
+			res.end('m2');
+		}
+
+		app.use(subApp);
+		app.use(m2);
+
+		request(app)
+			.get('/')
+			.expect('m2')
+			.end(done);
+	});
+
+	it('should pass unhandled error to parent', function (done) {
+		function m1(req, res, next) {
+			next('m1 error');
+		}
+
+		function e1(err, req, res, next) {
+			res.end(err);
+		}
+
+		subApp.use(m1);
+
+		app.use(subApp);
+		app.use(e1);
+
+		request(app)
+			.get('/')
+			.expect('m1 error')
+			.end(done);
+	});
+
+	it('should work as middleware', function (done) {
+		function m(req, res, next) {
+			res.write('m ');
+			next();
+		}
+
+		function subm(req, res, next) {
+			res.write('subm');
+			next();
+		}
+
+		subApp.use(subm);
+
+		app.use(m);
+		app.use(subApp);
+
+		request(app)
+			.get('/')
+			.expect('m subm')
 			.end(done);
 	});
 });
