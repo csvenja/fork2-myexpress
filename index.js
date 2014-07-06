@@ -11,7 +11,7 @@ module.exports = function () {
 				return;
 			}
 			i++;
-			middleware(req, res, next);
+			middleware.apply(app, [req, res, next]);
 		}
 		next();
 		res.statusCode = 404;
