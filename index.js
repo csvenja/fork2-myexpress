@@ -6,38 +6,45 @@ var Layer = require('./lib/Layer');
 module.exports = function () {
 	var app = function (req, res) {
 		var i = 0;
+		req.params = {};
 		function next(err) {
 			var middleware = app.stack[i];
-			if (err) {
-				if (middleware === undefined) {
-					res.statusCode = 500;
-					return res.end();
-				}
-				i++;
-				if (middleware.handle.length >= 4 && middleware.match(req.url)) {
-					middleware.handle.apply(app, [err, req, res, next]);
-				} else {
-					next(err);
-				}
-			} else {
-				if (middleware === undefined) {
+			i++;
+
+			if (middleware === undefined) {
+				if (!err) {
 					return;
 				}
-				i++;
-				if (middleware.handle.length < 4 && middleware.match(req.url)) {
+				res.statusCode = 500;
+				return res.end();
+			}
+
+			var match = middleware.match(req.url);
+			if (match) {
+				req.params = match.params;
+			} else {
+				next(err);
+			}
+
+			if (err) {
+				if (middleware.handle.length >= 4) {
+					middleware.handle.apply(app, [err, req, res, next]);
+				}
+			} else {
+				if (middleware.handle.length < 4) {
 					try {
 						middleware.handle.apply(app, [req, res, next]);
 					} catch(error) {
 						next(error);
 					}
-				} else {
-					next();
 				}
 			}
+
+			next(err);
 		}
 		next();
 		res.statusCode = 404;
-		res.end();
+		return res.end();
 	};
 
 	app.stack = [];
