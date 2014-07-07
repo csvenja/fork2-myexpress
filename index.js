@@ -22,10 +22,13 @@ module.exports = function () {
 				return res.end();
 			}
 
+			var url = req.url;
+			req.url = req.url.substr(middleware.trim.length);
 			var match = middleware.match(req.url);
 			if (match) {
 				req.params = match.params;
 			} else {
+				req.url = url;
 				next(err);
 			}
 
@@ -38,11 +41,11 @@ module.exports = function () {
 					try {
 						middleware.handle.apply(app, [req, res, next]);
 					} catch(error) {
-						next(error);
+						err = error;
 					}
 				}
 			}
-
+			req.url = url;
 			next(err);
 		}
 		next();
@@ -63,7 +66,10 @@ module.exports = function () {
 		}
 		var layer = new Layer(route, middleware);
 		if ('function' === typeof middleware.handle) {
-			this.stack.push.apply(this.stack, layer.handle.stack);
+			for (var i = 0; i < layer.handle.stack.length; i++) {
+				layer.handle.stack[i].trim = layer.route + layer.handle.stack[i].trim;
+				this.stack.push(layer.handle.stack[i]);
+			}
 		} else {
 			this.stack.push(layer);
 		}
