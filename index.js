@@ -14,19 +14,19 @@ module.exports = function () {
 					res.end();
 				}
 				i++;
-				if (middleware.length < 4) {
+				if (middleware.handle.length < 4) {
 					next(err);
 				} else {
-					middleware.apply(app, [err, req, res, next]);
+					middleware.handle.apply(app, [err, req, res, next]);
 				}
 			} else {
 				if (middleware === undefined) {
 					return;
 				}
 				i++;
-				if (middleware.length < 4) {
+				if (middleware.handle.length < 4 && middleware.match(req.url)) {
 					try {
-						middleware.apply(app, [req, res, next]);
+						middleware.handle.apply(app, [req, res, next]);
 					} catch(error) {
 						res.statusCode = 500;
 						res.end();
@@ -54,8 +54,8 @@ module.exports = function () {
 			route = '/';
 		}
 		middleware = new Layer(route, middleware);
-		if (middleware.__isMyexpressApp__) {
-			this.stack.push.apply(this.stack, middleware.stack);
+		if (middleware.handle.__isMyexpressApp__) {
+			this.stack.push.apply(this.stack, middleware.handle.stack);
 		} else {
 			this.stack.push(middleware);
 		}
