@@ -1,6 +1,7 @@
 'use strict';
 
 var http = require('http');
+var Layer = require('./lib/Layer');
 
 module.exports = function () {
 	var app = function (req, res) {
@@ -47,7 +48,12 @@ module.exports = function () {
 		return http.createServer(this).listen(port, done);
 	};
 
-	app.use = function (middleware) {
+	app.use = function (route, middleware) {
+		if ('string' != typeof route) {
+			middleware = route;
+			route = '/';
+		}
+		middleware = new Layer(route, middleware);
 		if (middleware.__isMyexpressApp__) {
 			this.stack.push.apply(this.stack, middleware.stack);
 		} else {
