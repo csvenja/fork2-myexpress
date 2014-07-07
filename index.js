@@ -11,13 +11,13 @@ module.exports = function () {
 			if (err) {
 				if (middleware === undefined) {
 					res.statusCode = 500;
-					res.end();
+					return res.end();
 				}
 				i++;
-				if (middleware.handle.length < 4) {
-					next(err);
-				} else {
+				if (middleware.handle.length >= 4 && middleware.match(req.url)) {
 					middleware.handle.apply(app, [err, req, res, next]);
+				} else {
+					next(err);
 				}
 			} else {
 				if (middleware === undefined) {
@@ -28,8 +28,7 @@ module.exports = function () {
 					try {
 						middleware.handle.apply(app, [req, res, next]);
 					} catch(error) {
-						res.statusCode = 500;
-						res.end();
+						next(error);
 					}
 				} else {
 					next();
