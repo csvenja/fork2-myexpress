@@ -5,6 +5,9 @@ var Layer = require('./lib/Layer');
 
 module.exports = function () {
 	var app = function (req, res) {
+		return app.handle(req, res);
+	};
+	app.handle = function (req, res) {
 		var i = 0;
 		req.params = {};
 		function next(err) {
@@ -48,7 +51,6 @@ module.exports = function () {
 	};
 
 	app.stack = [];
-	app.__isMyexpressApp__ = true;
 
 	app.listen = function (port, done) {
 		return http.createServer(this).listen(port, done);
@@ -59,11 +61,11 @@ module.exports = function () {
 			middleware = route;
 			route = '/';
 		}
-		middleware = new Layer(route, middleware);
-		if (middleware.handle.__isMyexpressApp__) {
-			this.stack.push.apply(this.stack, middleware.handle.stack);
+		var layer = new Layer(route, middleware);
+		if ('function' === typeof middleware.handle) {
+			this.stack.push.apply(this.stack, layer.handle.stack);
 		} else {
-			this.stack.push(middleware);
+			this.stack.push(layer);
 		}
 	};
 
