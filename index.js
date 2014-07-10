@@ -2,6 +2,7 @@
 
 var http = require('http');
 var Layer = require('./lib/Layer');
+var makeRoute = require('./lib/route');
 
 module.exports = function () {
 	var app = function (req, res, next) {
@@ -82,6 +83,12 @@ module.exports = function () {
 			route = '/';
 		}
 		var layer = new Layer(route, middleware);
+		this.stack.push(layer);
+	};
+
+	app.get = function (route, handler) {
+		var middleware = makeRoute('GET', handler);
+		var layer = new Layer(route, middleware, true);
 		this.stack.push(layer);
 	};
 
