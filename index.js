@@ -4,6 +4,7 @@ var http = require('http');
 var methods = require('methods');
 var Layer = require('./lib/Layer');
 var makeRoute = require('./lib/route');
+var createInjector = require('./lib/injector');
 
 module.exports = function () {
 	var app = function (req, res, next) {
@@ -113,7 +114,10 @@ module.exports = function () {
 		this._factories[name] = fn;
 	};
 
-	app.inject = function () {};
+	app.inject = function (handler) {
+		var injector = createInjector(handler, app);
+		return injector;
+	};
 
 	return app;
 };
