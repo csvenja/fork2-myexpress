@@ -137,6 +137,8 @@ module.exports = function () {
 	app.monkey_patch = function (req, res) {
 		req.__proto__ = reqExtension;
 		res.__proto__ = resExtension;
+		req.res = res;
+		res.req = req;
 	};
 
 	return app;
