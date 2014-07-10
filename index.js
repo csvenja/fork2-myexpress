@@ -87,12 +87,6 @@ module.exports = function () {
 		this.stack.push(layer);
 	};
 
-	// app.get = function (route, handler) {
-	// 	var middleware = makeRoute('GET', handler);
-	// 	var layer = new Layer(route, middleware, true);
-	// 	this.stack.push(layer);
-	// };
-
 	methods.forEach(function (method) {
 		app[method] = function (route, handler) {
 			var middleware = makeRoute(method, handler);
