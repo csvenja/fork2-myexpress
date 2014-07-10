@@ -26,7 +26,7 @@ module.exports = function () {
 			var middleware = app.stack[i];
 			i++;
 
-			if (middleware === undefined) {
+			if (!middleware) {
 				if (next) {
 					return next(err);
 				} else {
