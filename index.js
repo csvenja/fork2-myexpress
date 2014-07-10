@@ -10,6 +10,7 @@ var resExtension = require('./lib/response');
 
 module.exports = function () {
 	var app = function (req, res, next) {
+		app.monkey_patch(req, res);
 		return app.handle(req, res, next);
 	};
 
