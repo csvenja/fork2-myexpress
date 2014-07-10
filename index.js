@@ -5,6 +5,8 @@ var methods = require('methods');
 var Layer = require('./lib/Layer');
 var makeRoute = require('./lib/route');
 var createInjector = require('./lib/injector');
+var reqExtension = require('./lib/request');
+var resExtension = require('./lib/response');
 
 module.exports = function () {
 	var app = function (req, res, next) {
@@ -107,7 +109,7 @@ module.exports = function () {
 
 	app.all = function (path, handler) {
 		var route = app.route(path);
-		route['all'](handler);
+		route.all(handler);
 		return app;
 	};
 
@@ -118,6 +120,11 @@ module.exports = function () {
 	app.inject = function (handler) {
 		var injector = createInjector(handler, app);
 		return injector;
+	};
+
+	app.monkey_patch = function (req, res) {
+		req.__proto__ = reqExtension;
+		res.__proto__ = resExtension;
 	};
 
 	return app;
