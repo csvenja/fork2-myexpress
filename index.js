@@ -10,6 +10,9 @@ module.exports = function () {
 		return app.handle(req, res, next);
 	};
 
+	app.stack = [];
+	app._factories = {};
+
 	app.handle = function (req, res, next) {
 		var i = 0;
 		var removed = '';
@@ -72,8 +75,6 @@ module.exports = function () {
 		_next();
 	};
 
-	app.stack = [];
-
 	app.listen = function (port, done) {
 		return http.createServer(this).listen(port, done);
 	};
@@ -107,6 +108,12 @@ module.exports = function () {
 		route['all'](handler);
 		return app;
 	};
+
+	app.factory = function (name, fn) {
+		this._factories[name] = fn;
+	};
+
+	app.inject = function () {};
 
 	return app;
 };
