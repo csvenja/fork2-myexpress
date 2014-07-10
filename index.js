@@ -4,53 +4,70 @@ var http = require('http');
 var Layer = require('./lib/Layer');
 
 module.exports = function () {
-	var app = function (req, res) {
-		return app.handle(req, res);
+	var app = function (req, res, next) {
+		return app.handle(req, res, next);
 	};
-	app.handle = function (req, res) {
+
+	app.handle = function (req, res, next) {
 		var i = 0;
+		var removed = '';
+		var slashAdded = false;
 		req.params = {};
-		function next(err) {
+		function _next(err) {
+			if (slashAdded) {
+				req.url = req.url.substr(1);
+				slashAdded = false;
+			}
+			req.url = removed + req.url;
+			removed = '';
+
 			var middleware = app.stack[i];
 			i++;
 
 			if (middleware === undefined) {
-				if (!err) {
-					return;
+				if (next) {
+					return next(err);
+				} else {
+					if (!err) {
+						res.statusCode = 404;
+						return res.end();
+					}
+					res.statusCode = 500;
+					return res.end();
 				}
-				res.statusCode = 500;
-				return res.end();
 			}
 
-			var url = req.url;
-			req.url = req.url.substr(middleware.trim.length);
 			var match = middleware.match(req.url);
 			if (match) {
 				req.params = match.params;
+				if ('function' === typeof middleware.handle.handle) {
+					removed = middleware.route;
+					req.url = req.url.substr(removed.length);
+					if ('/' != req.url[0]) {
+						req.url = '/' + req.url;
+						slashAdded = true;
+					}
+				}
 			} else {
-				req.url = url;
-				next(err);
+				_next(err);
 			}
 
 			if (err) {
 				if (middleware.handle.length >= 4) {
-					middleware.handle.apply(app, [err, req, res, next]);
+					middleware.handle.apply(app, [err, req, res, _next]);
 				}
 			} else {
 				if (middleware.handle.length < 4) {
 					try {
-						middleware.handle.apply(app, [req, res, next]);
+						middleware.handle.apply(app, [req, res, _next]);
 					} catch(error) {
 						err = error;
 					}
 				}
 			}
-			req.url = url;
-			next(err);
+			_next(err);
 		}
-		next();
-		res.statusCode = 404;
-		return res.end();
+		_next();
 	};
 
 	app.stack = [];
@@ -65,14 +82,7 @@ module.exports = function () {
 			route = '/';
 		}
 		var layer = new Layer(route, middleware);
-		if ('function' === typeof middleware.handle) {
-			for (var i = 0; i < layer.handle.stack.length; i++) {
-				layer.handle.stack[i].trim = layer.route + layer.handle.stack[i].trim;
-				this.stack.push(layer.handle.stack[i]);
-			}
-		} else {
-			this.stack.push(layer);
-		}
+		this.stack.push(layer);
 	};
 
 	return app;
