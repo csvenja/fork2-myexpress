@@ -87,6 +87,7 @@ module.exports = function () {
 		}
 		var layer = new Layer(route, middleware);
 		this.stack.push(layer);
+		return app;
 	};
 
 	app.route = function (path) {
