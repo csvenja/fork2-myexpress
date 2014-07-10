@@ -11,6 +11,7 @@ var resExtension = require('./lib/response');
 module.exports = function () {
 	var app = function (req, res, next) {
 		app.monkey_patch(req, res);
+		req.app = app;
 		return app.handle(req, res, next);
 	};
 
@@ -22,6 +23,8 @@ module.exports = function () {
 		var removed = '';
 		var slashAdded = false;
 		req.params = {};
+		var restoreApp = null;
+
 		function _next(err) {
 			if (slashAdded) {
 				req.url = req.url.substr(1);
@@ -29,6 +32,11 @@ module.exports = function () {
 			}
 			req.url = removed + req.url;
 			removed = '';
+
+			if (restoreApp) {
+				req.app = restoreApp;
+				restoreApp = null;
+			}
 
 			var middleware = app.stack[i];
 			i++;
@@ -50,6 +58,9 @@ module.exports = function () {
 			if (match) {
 				req.params = match.params;
 				if ('function' === typeof middleware.handle.handle) {
+					restoreApp = req.app;
+					req.app = middleware;
+
 					removed = middleware.route;
 					req.url = req.url.substr(removed.length);
 					if ('/' != req.url[0]) {
