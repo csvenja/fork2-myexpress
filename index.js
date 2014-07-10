@@ -4,7 +4,6 @@ var http = require('http');
 var methods = require('methods');
 var Layer = require('./lib/Layer');
 var makeRoute = require('./lib/route');
-methods.push('all');
 
 module.exports = function () {
 	var app = function (req, res, next) {
@@ -102,6 +101,12 @@ module.exports = function () {
 			return app;
 		};
 	});
+
+	app.all = function (path, handler) {
+		var route = app.route(path);
+		route['all'](handler);
+		return app;
+	};
 
 	return app;
 };
