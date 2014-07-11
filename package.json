@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "methods": "^0.1.0",
+    "mime": "^1.2.11",
     "path-to-regexp": "^0.2.2"
   }
 }
