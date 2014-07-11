@@ -49,7 +49,7 @@ module.exports = function () {
 						res.statusCode = 404;
 						return res.end();
 					}
-					res.statusCode = 500;
+					res.statusCode = err.statusCode || 500;
 					return res.end();
 				}
 			}
