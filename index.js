@@ -1,7 +1,7 @@
 'use strict';
 
 var http = require('http');
-var methods = require('methods');
+var methods = require('methods').concat('all');
 var Layer = require('./lib/Layer');
 var makeRoute = require('./lib/route');
 var createInjector = require('./lib/injector');
@@ -118,12 +118,6 @@ module.exports = function () {
 			return app;
 		};
 	});
-
-	app.all = function (path, handler) {
-		var route = app.route(path);
-		route.all(handler);
-		return app;
-	};
 
 	app.factory = function (name, fn) {
 		this._factories[name] = fn;
