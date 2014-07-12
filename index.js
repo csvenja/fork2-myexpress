@@ -17,6 +17,7 @@ module.exports = function () {
 
 	app.stack = [];
 	app._factories = {};
+	app._dependencies = {};
 
 	app.handle = function (req, res, next) {
 		var i = 0;
@@ -24,6 +25,9 @@ module.exports = function () {
 		var slashAdded = false;
 		req.params = {};
 		var restoreApp = null;
+		if (!app._dependencies) {
+			app._dependencies = {};
+		}
 
 		function _next(err) {
 			if (slashAdded) {
@@ -120,7 +124,11 @@ module.exports = function () {
 	});
 
 	app.factory = function (name, fn) {
-		this._factories[name] = fn;
+		if ('function' === typeof fn) {
+			this._factories[name] = fn;
+		} else {
+			throw new Error();
+		}
 	};
 
 	app.inject = function (handler) {
