@@ -73,23 +73,26 @@ module.exports = function () {
 					}
 				}
 			} else {
-				_next(err);
+				return _next(err);
 			}
 
 			if (err) {
 				if (middleware.handle.length >= 4) {
 					middleware.handle.apply(app, [err, req, res, _next]);
 				}
+				_next(err);
 			} else {
 				if (middleware.handle.length < 4) {
 					try {
 						middleware.handle.apply(app, [req, res, _next]);
 					} catch(error) {
 						err = error;
+						_next(err);
 					}
+				} else {
+					_next();
 				}
 			}
-			_next(err);
 		}
 		_next();
 	};
