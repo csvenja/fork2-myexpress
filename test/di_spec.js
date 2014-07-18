@@ -1,12 +1,11 @@
-var request = require("supertest");
-var expect = require("chai").expect;
-var http = require("http");
+'use strict';
 
-var express = require("../");
+var request = require('supertest');
+var expect = require('chai').expect;
 
-var inject = require("../lib/injector");
+var express = require('../');
 
-describe("Implement Dependencies Caching:",function() {
+describe('Implement Dependencies Caching:',function() {
 	var app = express();
 	it('should cache the same dependency', function(done) {
 		var times = 0;
